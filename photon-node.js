@@ -6,7 +6,6 @@
  */
 class PhotonImage {
     static __wrap(ptr) {
-        ptr = ptr >>> 0;
         const obj = Object.create(PhotonImage.prototype);
         obj.__wbg_ptr = ptr;
         PhotonImageFinalization.register(obj, obj.__wbg_ptr, obj);
@@ -121,7 +120,7 @@ class PhotonImage {
         const ptr0 = passArray8ToWasm0(raw_pixels, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.photonimage_new(ptr0, len0, width, height);
-        this.__wbg_ptr = ret >>> 0;
+        this.__wbg_ptr = ret;
         PhotonImageFinalization.register(this, this.__wbg_ptr, this);
         return this;
     }
@@ -222,7 +221,7 @@ class Rgb {
      */
     constructor(r, g, b) {
         const ret = wasm.rgb_new(r, g, b);
-        this.__wbg_ptr = ret >>> 0;
+        this.__wbg_ptr = ret;
         RgbFinalization.register(this, this.__wbg_ptr, this);
         return this;
     }
@@ -306,7 +305,7 @@ class Rgba {
      */
     constructor(r, g, b, a) {
         const ret = wasm.rgba_new(r, g, b, a);
-        this.__wbg_ptr = ret >>> 0;
+        this.__wbg_ptr = ret;
         RgbaFinalization.register(this, this.__wbg_ptr, this);
         return this;
     }
@@ -618,6 +617,154 @@ function alter_two_channels(img, channel1, amt1, channel2, amt2) {
 exports.alter_two_channels = alter_two_channels;
 
 /**
+ * Remove chromatic aberration (purple and green fringing)
+ * Common in high-contrast edges from lens imperfections
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `purple_amount` - Purple fringing removal amount (0 to 100)
+ * * `green_amount` - Green fringing removal amount (0 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::corrections::apply_chromatic_aberration;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_chromatic_aberration(&mut img, 50.0, 30.0); // Remove purple and green fringing
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} purple_amount
+ * @param {number} green_amount
+ */
+function apply_chromatic_aberration(photon_image, purple_amount, green_amount) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_chromatic_aberration(photon_image.__wbg_ptr, purple_amount, green_amount);
+}
+exports.apply_chromatic_aberration = apply_chromatic_aberration;
+
+/**
+ * Apply clarity (local contrast / midtone contrast)
+ * Uses unsharp mask with large radius on luminance channel
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `amount` - Clarity amount (-100 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_clarity;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_clarity(&mut img, 25.0); // Increase clarity
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} amount
+ */
+function apply_clarity(photon_image, amount) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_clarity(photon_image.__wbg_ptr, amount);
+}
+exports.apply_clarity = apply_clarity;
+
+/**
+ * Apply 3-way color grading (shadows/midtones/highlights)
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `shadow_hue` - Shadow hue adjustment (0-360 degrees)
+ * * `shadow_sat` - Shadow saturation adjustment (-100 to 100)
+ * * `shadow_lum` - Shadow luminance adjustment (-100 to 100)
+ * * `midtone_hue` - Midtone hue adjustment (0-360 degrees)
+ * * `midtone_sat` - Midtone saturation adjustment (-100 to 100)
+ * * `midtone_lum` - Midtone luminance adjustment (-100 to 100)
+ * * `highlight_hue` - Highlight hue adjustment (0-360 degrees)
+ * * `highlight_sat` - Highlight saturation adjustment (-100 to 100)
+ * * `highlight_lum` - Highlight luminance adjustment (-100 to 100)
+ * * `blending` - Blending factor (0 to 100)
+ * * `balance` - Balance between shadows and highlights (-100 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_color_grading;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_color_grading(&mut img, 200.0, 20.0, -10.0, 0.0, 0.0, 0.0, 30.0, 15.0, 5.0, 50.0, 0.0);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} shadow_hue
+ * @param {number} shadow_sat
+ * @param {number} shadow_lum
+ * @param {number} midtone_hue
+ * @param {number} midtone_sat
+ * @param {number} midtone_lum
+ * @param {number} highlight_hue
+ * @param {number} highlight_sat
+ * @param {number} highlight_lum
+ * @param {number} blending
+ * @param {number} balance
+ */
+function apply_color_grading(photon_image, shadow_hue, shadow_sat, shadow_lum, midtone_hue, midtone_sat, midtone_lum, highlight_hue, highlight_sat, highlight_lum, blending, balance) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_color_grading(photon_image.__wbg_ptr, shadow_hue, shadow_sat, shadow_lum, midtone_hue, midtone_sat, midtone_lum, highlight_hue, highlight_sat, highlight_lum, blending, balance);
+}
+exports.apply_color_grading = apply_color_grading;
+
+/**
+ * Apply dehaze effect (atmospheric haze removal)
+ * Uses dark channel prior algorithm for haze removal
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `amount` - Dehaze amount (-100 to 100, positive removes haze, negative adds haze)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_dehaze;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_dehaze(&mut img, 50.0); // Remove haze
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} amount
+ */
+function apply_dehaze(photon_image, amount) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_dehaze(photon_image.__wbg_ptr, amount);
+}
+exports.apply_dehaze = apply_dehaze;
+
+/**
+ * Apply exposure compensation in linear space (scene-referred)
+ *
+ * Exposure is applied as a multiplier in linear space before gamma encoding.
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `ev` - Exposure value in EV (stops). Range: -5.0 to +5.0
+ *          Each +1 EV doubles the light, -1 EV halves it
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_exposure;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_exposure(&mut img, 1.5); // Brighten by 1.5 stops
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} ev
+ */
+function apply_exposure(photon_image, ev) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_exposure(photon_image.__wbg_ptr, ev);
+}
+exports.apply_exposure = apply_exposure;
+
+/**
  * Apply a gradient to an image.
  * @param {PhotonImage} image
  */
@@ -626,6 +773,378 @@ function apply_gradient(image) {
     wasm.apply_gradient(image.__wbg_ptr);
 }
 exports.apply_gradient = apply_gradient;
+
+/**
+ * Apply lens distortion correction (barrel/pincushion) with optional vignette removal
+ * Uses bilinear interpolation for smooth results
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `distortion` - Distortion amount (-100 to 100, negative for barrel, positive for pincushion)
+ * * `vignette` - Vignette correction amount (0 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::corrections::apply_lens_correction;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_lens_correction(&mut img, -20.0, 30.0); // Correct barrel distortion and vignette
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} distortion
+ * @param {number} vignette
+ */
+function apply_lens_correction(photon_image, distortion, vignette) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_lens_correction(photon_image.__wbg_ptr, distortion, vignette);
+}
+exports.apply_lens_correction = apply_lens_correction;
+
+/**
+ * Apply noise reduction (default: bilateral filtering)
+ *
+ * Convenience function that calls bilateral filtering
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `luminance` - Luminance noise reduction (0 to 100)
+ * * `color` - Color noise reduction (0 to 100)
+ * * `detail` - Detail preservation (0 to 100, higher = preserve more detail)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_noise_reduction;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_noise_reduction(&mut img, 40.0, 50.0, 50.0);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} luminance
+ * @param {number} color
+ * @param {number} detail
+ */
+function apply_noise_reduction(photon_image, luminance, color, detail) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_noise_reduction(photon_image.__wbg_ptr, luminance, color, detail);
+}
+exports.apply_noise_reduction = apply_noise_reduction;
+
+/**
+ * Apply noise reduction using bilateral filtering (edge-preserving)
+ *
+ * Reduces noise while preserving edges
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `luminance` - Luminance noise reduction (0 to 100)
+ * * `color` - Color noise reduction (0 to 100)
+ * * `detail` - Detail preservation (0 to 100, higher = preserve more detail)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_noise_reduction_bilateral;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_noise_reduction_bilateral(&mut img, 40.0, 50.0, 50.0);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} luminance
+ * @param {number} color
+ * @param {number} detail
+ */
+function apply_noise_reduction_bilateral(photon_image, luminance, color, detail) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_noise_reduction_bilateral(photon_image.__wbg_ptr, luminance, color, detail);
+}
+exports.apply_noise_reduction_bilateral = apply_noise_reduction_bilateral;
+
+/**
+ * Apply noise reduction using median filter
+ *
+ * Effective for salt-and-pepper noise, preserves edges well
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `radius` - Filter radius (1 to 3, typically 1-2)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_noise_reduction_median;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_noise_reduction_median(&mut img, 2);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} radius
+ */
+function apply_noise_reduction_median(photon_image, radius) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_noise_reduction_median(photon_image.__wbg_ptr, radius);
+}
+exports.apply_noise_reduction_median = apply_noise_reduction_median;
+
+/**
+ * Apply noise reduction using non-local means algorithm
+ *
+ * Advanced algorithm that compares similar patches across the image
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `strength` - Noise reduction strength (0 to 100)
+ * * `patch_size` - Patch size for comparison (3 or 5)
+ * * `search_radius` - Search radius for similar patches (5 to 15)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_noise_reduction_nlm;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_noise_reduction_nlm(&mut img, 50.0, 3, 10);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} strength
+ * @param {number} patch_size
+ * @param {number} search_radius
+ */
+function apply_noise_reduction_nlm(photon_image, strength, patch_size, search_radius) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_noise_reduction_nlm(photon_image.__wbg_ptr, strength, patch_size, search_radius);
+}
+exports.apply_noise_reduction_nlm = apply_noise_reduction_nlm;
+
+/**
+ * Apply noise reduction using wavelet denoising
+ *
+ * Uses wavelet transform to separate signal from noise, then reconstructs with reduced noise
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `strength` - Noise reduction strength (0 to 100)
+ * * `threshold` - Wavelet threshold (0 to 100, higher = more aggressive)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_noise_reduction_wavelets;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_noise_reduction_wavelets(&mut img, 50.0, 30.0);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} strength
+ * @param {number} threshold
+ */
+function apply_noise_reduction_wavelets(photon_image, strength, threshold) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_noise_reduction_wavelets(photon_image.__wbg_ptr, strength, threshold);
+}
+exports.apply_noise_reduction_wavelets = apply_noise_reduction_wavelets;
+
+/**
+ * Apply unsharp mask sharpening
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `amount` - Sharpening strength (0 to 150, typical 50-150)
+ * * `radius` - Edge detection radius in pixels (0.5 to 3.0, typical 0.8-1.5)
+ * * `threshold` - Minimum brightness difference to sharpen (0 to 255, typical 0-5)
+ * * `masking` - Edge masking (0 to 100, 0 = sharpen everywhere, 100 = edges only)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_sharpening;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_sharpening(&mut img, 100.0, 1.0, 2.0, 50.0);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} amount
+ * @param {number} radius
+ * @param {number} threshold
+ * @param {number} masking
+ */
+function apply_sharpening(photon_image, amount, radius, threshold, masking) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_sharpening(photon_image.__wbg_ptr, amount, radius, threshold, masking);
+}
+exports.apply_sharpening = apply_sharpening;
+
+/**
+ * Apply texture enhancement (medium-frequency detail enhancement)
+ * Similar to clarity but uses smaller radius for medium-frequency details
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `amount` - Texture amount (-100 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_texture;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_texture(&mut img, 30.0); // Increase texture
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} amount
+ */
+function apply_texture(photon_image, amount) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_texture(photon_image.__wbg_ptr, amount);
+}
+exports.apply_texture = apply_texture;
+
+/**
+ * Apply tone curve lookup table
+ * Applies a tone curve to the image's luminance while preserving color relationships
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `lookup_table` - A Vec<u8> containing 256 values representing the tone curve mapping.
+ *                    Each index represents an input value, and the value at that index is the output.
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_tone_curve;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * // Create a lookup table (e.g., linear curve: [0, 1, 2, ..., 255])
+ * let mut lut = Vec::new();
+ * for i in 0..256 {
+ *     lut.push(i as u8);
+ * }
+ * apply_tone_curve(&mut img, lut);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {Uint8Array} lookup_table
+ */
+function apply_tone_curve(photon_image, lookup_table) {
+    _assertClass(photon_image, PhotonImage);
+    const ptr0 = passArray8ToWasm0(lookup_table, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    wasm.apply_tone_curve(photon_image.__wbg_ptr, ptr0, len0);
+}
+exports.apply_tone_curve = apply_tone_curve;
+
+/**
+ * Apply tone zone adjustments (darks, shadows, highlights, whites)
+ * Uses luminance-based masking
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `darks` - Darks adjustment (-100 to 100)
+ * * `shadows` - Shadows adjustment (-100 to 100)
+ * * `highlights` - Highlights adjustment (-100 to 100)
+ * * `whites` - Whites adjustment (-100 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_tone_zones;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_tone_zones(&mut img, 10, 20, -10, 5); // Adjust tone zones
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} darks
+ * @param {number} shadows
+ * @param {number} highlights
+ * @param {number} whites
+ */
+function apply_tone_zones(photon_image, darks, shadows, highlights, whites) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_tone_zones(photon_image.__wbg_ptr, darks, shadows, highlights, whites);
+}
+exports.apply_tone_zones = apply_tone_zones;
+
+/**
+ * Apply vibrance adjustment
+ * Vibrance boosts less-saturated colors more and protects skin tones
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `amount` - Vibrance amount (-100 to 100)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_vibrance;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_vibrance(&mut img, 30.0); // Increase vibrance
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} amount
+ */
+function apply_vibrance(photon_image, amount) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_vibrance(photon_image.__wbg_ptr, amount);
+}
+exports.apply_vibrance = apply_vibrance;
+
+/**
+ * Apply vignette effect (edge darkening or lightening)
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `strength` - Vignette strength (-100 to 100, positive darkens edges, negative lightens)
+ * * `radius` - Vignette radius (0 to 100, percentage of image where vignette starts)
+ * * `softness` - Vignette softness (0 to 100, controls falloff curve)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_vignette;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_vignette(&mut img, 50.0, 30.0, 50.0); // Darken edges
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} strength
+ * @param {number} radius
+ * @param {number} softness
+ */
+function apply_vignette(photon_image, strength, radius, softness) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_vignette(photon_image.__wbg_ptr, strength, radius, softness);
+}
+exports.apply_vignette = apply_vignette;
+
+/**
+ * Apply white balance using Bradford chromatic adaptation
+ *
+ * Converts from the current illuminant to D65 (standard daylight).
+ *
+ * # Arguments
+ * * `photon_image` - A PhotonImage to process
+ * * `temperature` - Color temperature shift (-100 to 100, where 0 = 6500K/D65)
+ *                   Negative = warmer (lower Kelvin), Positive = cooler (higher Kelvin)
+ * * `tint` - Green-magenta axis (-100 to 100, where negative = green, positive = magenta)
+ *
+ * # Example
+ * ```no_run
+ * use photon_rs::adjustments::apply_white_balance;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * apply_white_balance(&mut img, -20.0, 5.0); // Warm up the image slightly with magenta tint
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} temperature
+ * @param {number} tint
+ */
+function apply_white_balance(photon_image, temperature, tint) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.apply_white_balance(photon_image.__wbg_ptr, temperature, tint);
+}
+exports.apply_white_balance = apply_white_balance;
 
 /**
  * Convert an image to grayscale by setting a pixel's 3 RGB values to the Blue channel's value.
@@ -677,6 +1196,44 @@ function base64_to_vec(base64) {
     return v2;
 }
 exports.base64_to_vec = base64_to_vec;
+
+/**
+ * Apply Bayer ordered dithering to an image.
+ *
+ * Ordered dithering quantizes each pixel's colour channels independently by
+ * comparing the channel value (plus a spatially-varying threshold from the
+ * 8×8 Bayer matrix) against the nearest quantization level.  Unlike
+ * Floyd-Steinberg error diffusion, every pixel is processed in isolation,
+ * making this algorithm branch-free and cache-friendly.
+ *
+ * # Arguments
+ * * `photon_image` - A mutable reference to the [`PhotonImage`] to process.
+ * * `bit_depth`    - Target bits per channel (clamped to 1–8).
+ *                    `1` → 2 levels (pure black/white per channel),
+ *                    `4` → 16 levels, `8` → no quantization.
+ * * `spread`       - Dithering spread in the range `[0.0, 1.0]`.
+ *                    `1.0` is the canonical Bayer threshold; lower values
+ *                    reduce the visible halftone pattern for a subtler look.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use photon_rs::effects::bayer_dither;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * // 2-bit depth, full Bayer spread — strong ordered dither
+ * bayer_dither(&mut img, 2, 1.0);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} bit_depth
+ * @param {number} spread
+ */
+function bayer_dither(photon_image, bit_depth, spread) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.bayer_dither(photon_image.__wbg_ptr, bit_depth, spread);
+}
+exports.bayer_dither = bayer_dither;
 
 /**
  * Blend two images together.
@@ -760,6 +1317,36 @@ function cali(img) {
     wasm.cali(img.__wbg_ptr);
 }
 exports.cali = cali;
+
+/**
+ * Apply a cinematic film look to an image.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use photon_rs::filters::cinematic;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * cinematic(&mut img);
+ * ```
+ *
+ * The same effect is also available through the generic dispatcher:
+ *
+ * ```no_run
+ * use photon_rs::filters::filter;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * filter(&mut img, "cinematic");
+ * ```
+ * @param {PhotonImage} img
+ */
+function cinematic(img) {
+    _assertClass(img, PhotonImage);
+    wasm.cinematic(img.__wbg_ptr);
+}
+exports.cinematic = cinematic;
 
 /**
  * Horizontal strips. Divide an image into a series of equal-width strips, for an artistic effect. Sepcify a color as well.
@@ -1643,6 +2230,44 @@ function emboss(photon_image) {
     wasm.emboss(photon_image.__wbg_ptr);
 }
 exports.emboss = emboss;
+
+/**
+ * Apply a cinematic film grain effect to an image.
+ *
+ * Simulates analog photographic grain by adding spatially-varying noise that is weighted by each
+ * pixel's perceptual luminance: grain is strongest in the midtones and naturally falls off toward the
+ * shadows and highlights matching the characteristic response of real photographic emulsions.
+ *
+ * # Arguments
+ * * `photon_image` - A mutable reference to the [`PhotonImage`] to process.
+ * * `intensity`    - Grain strength in the range `[0.0, 1.0]`.
+ *                    `0.1` – `0.3` is a realistic film look; `1.0` is extreme.
+ * * `monochrome`   - When `true`, a single noise sample is shared across R, G and B (silver-halide style, one PRNG call per pixel).
+ *                    When `false`, each channel gets an independent sample, producing the subtle colour fringing of
+ *                    multi-layer film stocks (three PRNG calls per pixel).
+ *
+ * * `seed`         - Initial PRNG seed. Use a fixed value for reproducible results or any non-zero runtime value for variation.
+ *                    Supplying `0` falls back to an internal safe constant.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use photon_rs::noise::film_grain;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * film_grain(&mut img, 0.15, true, 42);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} intensity
+ * @param {boolean} monochrome
+ * @param {number} seed
+ */
+function film_grain(photon_image, intensity, monochrome, seed) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.film_grain(photon_image.__wbg_ptr, intensity, monochrome, seed);
+}
+exports.film_grain = film_grain;
 
 /**
  * Apply a filter to an image. Over 20 filters are available.
@@ -4179,6 +4804,28 @@ function vertical_strips(photon_image, num_strips) {
 exports.vertical_strips = vertical_strips;
 
 /**
+ * Apply a radial vignette effect to an image.
+ *
+ * # Example
+ *
+ * ```no_run
+ * use photon_rs::effects::vignette;
+ * use photon_rs::native::open_image;
+ *
+ * let mut img = open_image("img.jpg").expect("File should open");
+ * // Moderate vignette — corners darken by ~60 %
+ * vignette(&mut img, 0.6);
+ * ```
+ * @param {PhotonImage} photon_image
+ * @param {number} intensity
+ */
+function vignette(photon_image, intensity) {
+    _assertClass(photon_image, PhotonImage);
+    wasm.vignette(photon_image.__wbg_ptr, intensity);
+}
+exports.vignette = vignette;
+
+/**
  * Add a watermark to an image.
  *
  * # Arguments
@@ -4208,52 +4855,51 @@ function watermark(img, watermark, x, y) {
     wasm.watermark(img.__wbg_ptr, watermark.__wbg_ptr, x, y);
 }
 exports.watermark = watermark;
-
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
-        __wbg___wbindgen_debug_string_5398f5bb970e0daa: function(arg0, arg1) {
+        __wbg___wbindgen_debug_string_edece8177ad01481: function(arg0, arg1) {
             const ret = debugString(arg1);
             const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len1 = WASM_VECTOR_LEN;
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
-        __wbg___wbindgen_is_undefined_52709e72fb9f179c: function(arg0) {
+        __wbg___wbindgen_is_undefined_35bb9f4c7fd651d5: function(arg0) {
             const ret = arg0 === undefined;
             return ret;
         },
-        __wbg___wbindgen_throw_6ddd609b62940d55: function(arg0, arg1) {
+        __wbg___wbindgen_throw_9c31b086c2b26051: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_appendChild_8cb157b6ec5612a6: function() { return handleError(function (arg0, arg1) {
+        __wbg_appendChild_6e88800a9a8fb360: function() { return handleError(function (arg0, arg1) {
             const ret = arg0.appendChild(arg1);
             return ret;
         }, arguments); },
-        __wbg_body_5eb99e7257e5ae34: function(arg0) {
+        __wbg_body_2ac005c657a3d103: function(arg0) {
             const ret = arg0.body;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
-        __wbg_createElement_9b0aab265c549ded: function() { return handleError(function (arg0, arg1, arg2) {
+        __wbg_createElement_d10771800cfb6e7e: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.createElement(getStringFromWasm0(arg1, arg2));
             return ret;
         }, arguments); },
-        __wbg_data_40ab3982572daa21: function(arg0, arg1) {
+        __wbg_data_d3e23b46b9ff9577: function(arg0, arg1) {
             const ret = arg1.data;
             const ptr1 = passArray8ToWasm0(ret, wasm.__wbindgen_malloc);
             const len1 = WASM_VECTOR_LEN;
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
-        __wbg_document_c0320cd4183c6d9b: function(arg0) {
+        __wbg_document_3540635616a18455: function(arg0) {
             const ret = arg0.document;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
-        __wbg_drawImage_91631f4ec3c9e0a8: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
-            arg0.drawImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
-        }, arguments); },
-        __wbg_drawImage_efaa3d089b70b010: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+        __wbg_drawImage_cc363a1d7c7add77: function() { return handleError(function (arg0, arg1, arg2, arg3) {
             arg0.drawImage(arg1, arg2, arg3);
+        }, arguments); },
+        __wbg_drawImage_ed1280f17c51149a: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
+            arg0.drawImage(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }, arguments); },
         __wbg_error_a6fa202b58aa1cd3: function(arg0, arg1) {
             let deferred0_0;
@@ -4266,27 +4912,27 @@ function __wbg_get_imports() {
                 wasm.__wbindgen_free(deferred0_0, deferred0_1, 1);
             }
         },
-        __wbg_getContext_f04bf8f22dcb2d53: function() { return handleError(function (arg0, arg1, arg2) {
+        __wbg_getContext_e1463ff7aa682d57: function() { return handleError(function (arg0, arg1, arg2) {
             const ret = arg0.getContext(getStringFromWasm0(arg1, arg2));
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         }, arguments); },
-        __wbg_getImageData_88e532fe2924188e: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
+        __wbg_getImageData_b8c207c89b969d79: function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
             const ret = arg0.getImageData(arg1, arg2, arg3, arg4);
             return ret;
         }, arguments); },
-        __wbg_height_05531443b91baa6e: function(arg0) {
+        __wbg_height_4758eef353c25bbc: function(arg0) {
             const ret = arg0.height;
             return ret;
         },
-        __wbg_height_6568c4427c3b889d: function(arg0) {
+        __wbg_height_9edadb8dd6231945: function(arg0) {
             const ret = arg0.height;
             return ret;
         },
-        __wbg_height_a6fcb48398bd1539: function(arg0) {
+        __wbg_height_aef2a2eb10d0d530: function(arg0) {
             const ret = arg0.height;
             return ret;
         },
-        __wbg_instanceof_CanvasRenderingContext2d_08b9d193c22fa886: function(arg0) {
+        __wbg_instanceof_CanvasRenderingContext2d_d4be74cff7165c1e: function(arg0) {
             let result;
             try {
                 result = arg0 instanceof CanvasRenderingContext2D;
@@ -4296,7 +4942,7 @@ function __wbg_get_imports() {
             const ret = result;
             return ret;
         },
-        __wbg_instanceof_HtmlCanvasElement_26125339f936be50: function(arg0) {
+        __wbg_instanceof_HtmlCanvasElement_a02da0a417f1bf3f: function(arg0) {
             let result;
             try {
                 result = arg0 instanceof HTMLCanvasElement;
@@ -4306,7 +4952,7 @@ function __wbg_get_imports() {
             const ret = result;
             return ret;
         },
-        __wbg_instanceof_Window_23e677d2c6843922: function(arg0) {
+        __wbg_instanceof_Window_faa5cf994f49cca7: function(arg0) {
             let result;
             try {
                 result = arg0 instanceof Window;
@@ -4316,7 +4962,7 @@ function __wbg_get_imports() {
             const ret = result;
             return ret;
         },
-        __wbg_length_ea16607d7b61445b: function(arg0) {
+        __wbg_length_56fcd3e2b7e0299d: function(arg0) {
             const ret = arg0.length;
             return ret;
         },
@@ -4324,27 +4970,27 @@ function __wbg_get_imports() {
             const ret = new Error();
             return ret;
         },
-        __wbg_new_5f486cdf45a04d78: function(arg0) {
+        __wbg_new_7ddec6de44ff8f5d: function(arg0) {
             const ret = new Uint8Array(arg0);
             return ret;
         },
-        __wbg_new_with_u8_clamped_array_and_sh_5d9be5b17e50951c: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+        __wbg_new_with_u8_clamped_array_and_sh_13504c3c5394c7c9: function() { return handleError(function (arg0, arg1, arg2, arg3) {
             const ret = new ImageData(getClampedArrayU8FromWasm0(arg0, arg1), arg2 >>> 0, arg3 >>> 0);
             return ret;
         }, arguments); },
-        __wbg_prototypesetcall_d62e5099504357e6: function(arg0, arg1, arg2) {
+        __wbg_prototypesetcall_5f9bdc8d75e07276: function(arg0, arg1, arg2) {
             Uint8Array.prototype.set.call(getArrayU8FromWasm0(arg0, arg1), arg2);
         },
-        __wbg_putImageData_1750176f4dd07174: function() { return handleError(function (arg0, arg1, arg2, arg3) {
+        __wbg_putImageData_947c369295a5768a: function() { return handleError(function (arg0, arg1, arg2, arg3) {
             arg0.putImageData(arg1, arg2, arg3);
         }, arguments); },
-        __wbg_set_height_b6548a01bdcb689a: function(arg0, arg1) {
+        __wbg_set_height_bdd58e6b04e88cca: function(arg0, arg1) {
             arg0.height = arg1 >>> 0;
         },
-        __wbg_set_textContent_1e964492a2410e92: function(arg0, arg1, arg2) {
+        __wbg_set_textContent_9c5d65d703443b6d: function(arg0, arg1, arg2) {
             arg0.textContent = arg1 === 0 ? undefined : getStringFromWasm0(arg1, arg2);
         },
-        __wbg_set_width_c0fcaa2da53cd540: function(arg0, arg1) {
+        __wbg_set_width_25112eb6bf1148df: function(arg0, arg1) {
             arg0.width = arg1 >>> 0;
         },
         __wbg_stack_3b0d974bbf31e44f: function(arg0, arg1) {
@@ -4354,31 +5000,31 @@ function __wbg_get_imports() {
             getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
             getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
         },
-        __wbg_static_accessor_GLOBAL_8adb955bd33fac2f: function() {
-            const ret = typeof global === 'undefined' ? null : global;
-            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
-        },
-        __wbg_static_accessor_GLOBAL_THIS_ad356e0db91c7913: function() {
+        __wbg_static_accessor_GLOBAL_THIS_02344c9b09eb08a9: function() {
             const ret = typeof globalThis === 'undefined' ? null : globalThis;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
-        __wbg_static_accessor_SELF_f207c857566db248: function() {
+        __wbg_static_accessor_GLOBAL_ac6d4ac874d5cd54: function() {
+            const ret = typeof global === 'undefined' ? null : global;
+            return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
+        },
+        __wbg_static_accessor_SELF_9b2406c23aeb2023: function() {
             const ret = typeof self === 'undefined' ? null : self;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
-        __wbg_static_accessor_WINDOW_bb9f1ba69d61b386: function() {
+        __wbg_static_accessor_WINDOW_b34d2126934e16ba: function() {
             const ret = typeof window === 'undefined' ? null : window;
             return isLikeNone(ret) ? 0 : addToExternrefTable0(ret);
         },
-        __wbg_width_462295a1353ea71b: function(arg0) {
+        __wbg_width_0501569208b20317: function(arg0) {
             const ret = arg0.width;
             return ret;
         },
-        __wbg_width_4d6fc7fecd877217: function(arg0) {
+        __wbg_width_14ddc8f4e1a3dcbe: function(arg0) {
             const ret = arg0.width;
             return ret;
         },
-        __wbg_width_6a767700990b90f4: function(arg0) {
+        __wbg_width_e987166926c3367c: function(arg0) {
             const ret = arg0.width;
             return ret;
         },
@@ -4400,13 +5046,13 @@ function __wbg_get_imports() {
 
 const PhotonImageFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_photonimage_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_photonimage_free(ptr, 1));
 const RgbFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_rgb_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_rgb_free(ptr, 1));
 const RgbaFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_rgba_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_rgba_free(ptr, 1));
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
@@ -4504,8 +5150,7 @@ function getDataViewMemory0() {
 }
 
 function getStringFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return decodeText(ptr, len);
+    return decodeText(ptr >>> 0, len);
 }
 
 let cachedUint8ArrayMemory0 = null;
@@ -4611,5 +5256,6 @@ let WASM_VECTOR_LEN = 0;
 const wasmPath = `${__dirname}/photon-node_bg.wasm`;
 const wasmBytes = require('fs').readFileSync(wasmPath);
 const wasmModule = new WebAssembly.Module(wasmBytes);
-let wasm = new WebAssembly.Instance(wasmModule, __wbg_get_imports()).exports;
+let wasmInstance = new WebAssembly.Instance(wasmModule, __wbg_get_imports());
+let wasm = wasmInstance.exports;
 wasm.__wbindgen_start();
