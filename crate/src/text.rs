@@ -54,6 +54,7 @@ pub fn draw_text_with_border(
         x: font_size * 1.0,
         y: font_size,
     };
+    // Draw the border using a grayscale image; we use white by default.
     draw_text_mut(
         &mut image2,
         Rgba([255u8, 255u8, 255u8, 255u8]),
@@ -76,6 +77,7 @@ pub fn draw_text_with_border(
         }
     }
 
+    // Draw the text itself in white by default.
     draw_text_mut(
         &mut image,
         Rgba([255u8, 255u8, 255u8, 255u8]),
@@ -131,6 +133,66 @@ pub fn draw_text(
     draw_text_mut(
         &mut image,
         Rgba([255u8, 255u8, 255u8, 255u8]),
+        x,
+        y,
+        scale,
+        &font,
+        text,
+    );
+    let dynimage = image::DynamicImage::ImageRgba8(image);
+    photon_img.raw_pixels = dynimage.into_bytes();
+}
+
+/// Add text to an image with a custom RGBA colour.
+///
+/// This function allows you to specify the colour of the text via individual
+/// red, green, blue and alpha channel values. It follows the same semantics
+/// as [`draw_text`], but uses the supplied colour when drawing the text.
+///
+/// # Arguments
+/// * `photon_img` - A mutable reference to the PhotonImage to draw on.
+/// * `text` - The string slice containing the text you want to draw.
+/// * `x` - The x-coordinate for the first letter's top-left pixel.
+/// * `y` - The y-coordinate for the first letter's top-left pixel.
+/// * `font_size` - The font size in pixels.
+/// * `r` - The red channel of the text colour (0‒255).
+/// * `g` - The green channel of the text colour (0‒255).
+/// * `b` - The blue channel of the text colour (0‒255).
+/// * `a` - The alpha (opacity) channel of the text colour (0‒255).
+///
+/// # Example
+///
+/// ```no_run
+/// use photon_rs::native::open_image;
+/// use photon_rs::text::draw_text_with_color;
+/// let mut img = open_image("img.jpg").expect("File should open");
+/// // Draw semi-transparent red text at position (50, 50)
+/// draw_text_with_color(&mut img, "Hello, world!", 50, 50, 42.0, 255, 0, 0, 128);
+/// ```
+#[cfg_attr(feature = "enable_wasm", wasm_bindgen)]
+pub fn draw_text_with_color(
+    photon_img: &mut PhotonImage,
+    text: &str,
+    x: i32,
+    y: i32,
+    font_size: f32,
+    r: u8,
+    g: u8,
+    b: u8,
+    a: u8,
+) {
+    let mut image = helpers::dyn_image_from_raw(photon_img).to_rgba8();
+
+    let font = Vec::from(include_bytes!("../fonts/Roboto-Regular.ttf") as &[u8]);
+    let font = Font::try_from_bytes(&font).unwrap();
+    let scale = Scale {
+        x: font_size * 1.0,
+        y: font_size,
+    };
+
+    draw_text_mut(
+        &mut image,
+        Rgba([r, g, b, a]),
         x,
         y,
         scale,
