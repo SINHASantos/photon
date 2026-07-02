@@ -3,7 +3,7 @@
 //! which is a graphic design library, compatible with Photon.
 
 use crate::iter::ImageIterator;
-use crate::{helpers, PhotonImage};
+use crate::{helpers, PhotonImage, Rgba as PhotonRgba};
 use image::{DynamicImage, Rgba};
 use imageproc::distance_transform::Norm;
 use imageproc::drawing::draw_text_mut;
@@ -159,8 +159,8 @@ pub fn draw_text(
 ///
 /// ```no_run
 /// // For example to draw the string "Welcome to Photon!" at 10, 10:
-/// use image::Rgba;
 /// use photon_rs::native::open_image;
+/// use photon_rs::Rgba;
 /// use photon_rs::text::draw_text_with_color;
 ///
 /// // Open the image. A PhotonImage is returned.
@@ -171,16 +171,17 @@ pub fn draw_text(
 ///     10_i32,
 ///     10_i32,
 ///     90_f32,
-///     Rgba([100u8, 100u8, 100u8, 255u8]),
+///     Rgba::new(100u8, 100u8, 100u8, 255u8),
 /// );
 /// ```
+#[cfg_attr(feature = "enable_wasm", wasm_bindgen)]
 pub fn draw_text_with_color(
     photon_img: &mut PhotonImage,
     text: &str,
     x: i32,
     y: i32,
     font_size: f32,
-    color: Rgba<u8>,
+    color: PhotonRgba,
 ) {
     let mut image = helpers::dyn_image_from_raw(photon_img).to_rgba8();
     let font = Vec::from(include_bytes!("../fonts/Roboto-Regular.ttf") as &[u8]);
@@ -189,6 +190,13 @@ pub fn draw_text_with_color(
         x: font_size * 1.0,
         y: font_size,
     };
+
+    let color = Rgba([
+        color.get_red(),
+        color.get_green(),
+        color.get_blue(),
+        color.get_alpha(),
+    ]);
 
     draw_text_mut(&mut image, color, x, y, scale, &font, text);
 
