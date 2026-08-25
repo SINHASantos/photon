@@ -261,6 +261,7 @@ Contributors include (be sure to add yourself to the list if you submitted a PR)
 * **benliao** - [@benliao](https://github.com/benliao)
 * **Fineshop Design** - [@fineshop](https://github.com/fineshop)
 * **volbot** - [@volbot](https://github.com/volbot)
+* **2001J** - [@2001J](https://github.com/2001J)
 * **Future You(?)** - (See Contributing above)
 
 ## License
